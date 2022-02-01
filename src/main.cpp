@@ -103,7 +103,7 @@ struct start_state : associated_state {
 
       return new state_writter { str, client };
     } else {
-      return this;
+      return new start_state {client};
     }
   }
 
