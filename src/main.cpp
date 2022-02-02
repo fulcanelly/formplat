@@ -44,7 +44,6 @@ struct state_writter : associated_state {
   }
 
   virtual state_t next() {
-    Serial.println(__PRETTY_FUNCTION__);
 
     if (not sent) {
       client.println(to_write);
@@ -72,12 +71,9 @@ struct loop_state : associated_state {
   }
 
   virtual state_t next() override {
-    Serial.println(__PRETTY_FUNCTION__);
 
     auto res = captured->next();
-    Serial.printf("ptr is %p\n", res);
 
-   // Serial.printf("ptr is %p\n", res.get());
     if (res) {
       return std::make_shared<loop_state>(res, restart, client);
     } else if (not end) {
@@ -85,16 +81,6 @@ struct loop_state : associated_state {
     } else {
       return nullptr;
     }
-    /*
-    if (res) {
-      return state_t { 
-        new loop_state { res, restart }
-      };
-    } else {
-      return state_t { 
-        new loop_state { restart, restart }
-      };
-    }*/
   }
 
 };
@@ -111,12 +97,9 @@ struct start_state : associated_state {
   associated_state* clean_next() {
 
     auto avaliable = client.available();
-    Serial.println(__PRETTY_FUNCTION__);
 
     if (avaliable) {
-      Serial.printf("avalibale: %d\n", avaliable);
       auto str = client.readStringUntil('\n');
-      Serial.printf("got: '%s'\n", str.c_str());
 
       return new state_writter { str, client };
     } else {
@@ -125,7 +108,6 @@ struct start_state : associated_state {
   }
 
   virtual state_t next() override {
-    Serial.println(__PRETTY_FUNCTION__);
     return state_t { clean_next() };
   }
 
@@ -137,7 +119,6 @@ struct callback {
 };
 
 
-
 struct state_reader : associated_state {
   WiFiClient client;
   state_t callback;
@@ -147,7 +128,6 @@ struct state_reader : associated_state {
   }
 
   virtual state_t next() {
-    Serial.println(__PRETTY_FUNCTION__);
     return nullptr;
   }
 };
@@ -166,9 +146,6 @@ states_t filter(states_t &input) {
 }
 
 states_t handle(states_t &&input) {
-  if (input.size()) {
-    Serial.printf("\n\n");
-  }
   states_t result;
   for (auto state : input) {
     auto next = state->next();
