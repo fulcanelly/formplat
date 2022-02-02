@@ -198,6 +198,19 @@ void connect_to_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+void accept_connection() {
+  WiFiClient client = server.available();
+        
+  if (client) {
+    auto start = std::make_shared<start_state>(client);
+    states.push_back(state_t { 
+      new loop_state {
+        start, start, client
+      }
+    });
+  }    
+}
+
 void setup() {
   Serial.begin(115200);
   connect_to_wifi();
@@ -212,21 +225,14 @@ void setup() {
     })
     .on(service_);
   
+  task::every(100)
+    .run(accept_connection)
+    .on(service_);
+  
 }
 
+
 void loop() {
-  WiFiClient client = server.available();
-  if (client) {
-    auto start = std::make_shared<start_state>(client);
-    states.push_back(state_t { 
-      new loop_state {
-        start, start, client
-      }
-    });
-  }
-
   states = handle(filter(states));
-
-  service_.run();
-   
+  service_.run();  
 }
