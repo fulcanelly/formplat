@@ -8,8 +8,8 @@
 #include "./executors.h"
 #include "./matcher.h"
 
-const char* ssid = "***REMOVED***";
-const char* password = "***REMOVED***";
+const char* ssid = "netis";
+const char* password = "75246905";
 
 WiFiServer server(80);
 service service_;
@@ -240,10 +240,14 @@ void setup() {
     .run(accept_connection)
     .on(service_);
   
+  task::every(1)
+    .run([] {
+      states = handle(filter(states));
+    })
+    .on(service_);
 }
 
 
 void loop() {
-  states = handle(filter(states));
   service_.run();  
 }
