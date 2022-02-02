@@ -203,9 +203,12 @@ void setup() {
   connect_to_wifi();
   server.begin();
 
-  task::every(3000)
+  task::every(1000)
     .run([] {
       Serial.printf("states count: %d\n", states.size());
+      Serial.printf("free space %u\n", ESP.getFreeHeap());
+      Serial.printf("CPU clock %u\n", ESP.getCpuFreqMHz());
+      Serial.println();
     })
     .on(service_);
   
