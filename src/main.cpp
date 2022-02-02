@@ -2,6 +2,9 @@
 #include <WiFi.h>
 #include <vector>
 #include <memory>
+#include <map>
+#include <sstream>
+
 #include "./executors.h"
 
 const char* ssid = "***REMOVED***";
@@ -85,6 +88,8 @@ struct loop_state : associated_state {
 
 };
 
+volatile bool state = 1;
+
 struct start_state : associated_state {
   WiFiClient client;
 
@@ -94,6 +99,29 @@ struct start_state : associated_state {
     return client.connected();
   }
 
+  String dispatch(register String& str) {
+    std::stringstream stream;
+
+    static auto matcher_ = matcher<String, void>(
+      [](String a, String b) -> bool { return a.startsWith(b); })
+        .when("freemem", [&] { 
+          stream << ESP.getFreeHeap();
+        })
+        .when("toggle", [&] {
+          digitalWrite(LED_BUILTIN, state = !state);
+          stream << std::boolalpha << state;
+        })
+        .on_nokey([&] {
+          stream << str;
+        });
+
+    matcher_.apply(str);
+    stream << '\n';
+
+    return stream.str().c_str();
+
+  } 
+
   associated_state* clean_next() {
 
     auto avaliable = client.available();
@@ -101,7 +129,9 @@ struct start_state : associated_state {
     if (avaliable) {
       auto str = client.readStringUntil('\n');
 
-      return new state_writter { str, client };
+      return new state_writter { 
+        dispatch(str), client 
+      };
     } else {
       return new start_state {client};
     }
@@ -189,6 +219,9 @@ void accept_connection() {
 }
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+
   Serial.begin(115200);
   connect_to_wifi();
   server.begin();
