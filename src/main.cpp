@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "./executors.h"
+#include "./matcher.h"
 
 const char* ssid = "***REMOVED***";
 const char* password = "***REMOVED***";
@@ -49,7 +50,7 @@ struct state_writter : associated_state {
   virtual state_t next() {
 
     if (not sent) {
-      client.println(to_write);
+      client.print(to_write);
       sent = true;
     }
     return nullptr;
@@ -112,7 +113,7 @@ struct start_state : associated_state {
           stream << std::boolalpha << state;
         })
         .on_nokey([&] {
-          stream << str;
+          stream << str.substring(0, str.length() - 2).c_str();
         });
 
     matcher_.apply(str);
