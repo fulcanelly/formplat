@@ -26,6 +26,8 @@ struct associated_state {
 
   virtual bool is_alive() = 0;
   virtual state_t next() = 0;
+
+  virtual ~associated_state() {};
   
 };
 
